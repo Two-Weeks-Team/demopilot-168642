@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #f5f7fa; /* light gray-blue */
+  --color-foreground: #1e293b; /* slate‑900 */
+  --color-card: #ffffff;
+  --color-muted: #e2e8f0; /* slate‑200 */
+  --color-border: #cbd5e1; /* slate‑300 */
+  --color-primary: #2563eb; /* blue‑600 */
+  --color-accent: #ea580c; /* orange‑600 */
+  --color-success: #16a34a; /* green‑600 */
+  --color-warning: #d97706; /* amber‑600 */
+  --radius: 0.5rem;
+  --shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+html, body {
+  scroll-behavior: smooth;
+}
+
+/* Soft gradient background for depth */
+body {
+  background: linear-gradient(135deg, var(--color-background) 0%, #e0e7ff 100%);
+}
+
+/* Card styling */
+.card {
+  @apply bg-card rounded-lg shadow-md p-6;
+}
