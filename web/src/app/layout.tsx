@@ -2,7 +2,10 @@ import '@/app/globals.css';
 
 export const metadata = {
   title: 'DemoPilot – AI‑Powered Pitch Rehearsal',
-  description: 'Transform your pitch with AI‑driven rehearsal and feedback.'
+  description: 'Transform your pitch with AI‑driven rehearsal and feedback.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

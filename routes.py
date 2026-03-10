@@ -16,6 +16,7 @@ from ai_service import generate_feedback, generate_script
 router = APIRouter()
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+optional_oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 # ---------------------------------------------------------------------------
 # Dependency – provide a DB session per request
@@ -52,6 +53,18 @@ def _verify_token(token: str, db: Session) -> User:
 
 async def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(get_db)) -> User:
     return _verify_token(token, db)
+
+
+async def get_current_user_optional(
+    token: Optional[str] = Depends(optional_oauth_scheme),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    if not token:
+        return None
+    try:
+        return _verify_token(token, db)
+    except HTTPException:
+        return None
 
 # ---------------------------------------------------------------------------
 # Pydantic request / response models
@@ -230,24 +243,36 @@ def list_rehearsals(current_user: User = Depends(get_current_user), db: Session 
 # AI‑powered feedback endpoint
 # ---------------------------------------------------------------------------
 @router.post("/feedback", response_model=FeedbackResponse)
-async def post_feedback(req: FeedbackRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    rehearsal = db.query(Rehearsal).filter(Rehearsal.id == req.rehearsal_id, Rehearsal.user_id == current_user.id).first()
-    if not rehearsal:
-        raise HTTPException(status_code=404, detail="Rehearsal not found")
-    # Call AI service
-    ai_result = await generate_feedback(rehearsal.recording_url)
-    # Persist raw payload
-    feedback = Feedback(
-        user_id=current_user.id,
-        rehearsal_id=rehearsal.id,
-        payload=ai_result,
-    )
-    db.add(feedback)
-    db.commit()
-    db.refresh(feedback)
-    # Shape response according to specification
+async def post_feedback(
+    req: FeedbackRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
+):
+    rehearsal = None
+    if current_user:
+        rehearsal = db.query(Rehearsal).filter(
+            Rehearsal.id == req.rehearsal_id,
+            Rehearsal.user_id == current_user.id,
+        ).first()
+
+    recording_target = rehearsal.recording_url if rehearsal else "demo://startup-pitch-rehearsal"
+    ai_result = await generate_feedback(recording_target)
+
+    if rehearsal and current_user:
+        feedback = Feedback(
+            user_id=current_user.id,
+            rehearsal_id=rehearsal.id,
+            payload=ai_result,
+        )
+        db.add(feedback)
+        db.commit()
+        db.refresh(feedback)
+        feedback_id = str(feedback.id)
+    else:
+        feedback_id = str(uuid.uuid4())
+
     return {
-        "feedback_id": str(feedback.id),
+        "feedback_id": feedback_id,
         "clarity": ai_result.get("clarity", {"score": 0, "suggestions": []}),
         "engagement": ai_result.get("engagement", {"score": 0, "suggestions": []}),
         "persuasion": ai_result.get("persuasion", {"score": 0, "suggestions": []}),
