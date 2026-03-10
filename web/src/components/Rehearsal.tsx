@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { MicrophoneIcon, CloudUploadIcon } from '@heroicons/react/24/solid';
+import { MicrophoneIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 
 interface RehearsalProps {
