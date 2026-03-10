@@ -282,12 +282,15 @@ async def post_feedback(
         ).first()
 
     recording_target = rehearsal.recording_url if rehearsal else "demo://startup-pitch-rehearsal"
-    ai_result = await generate_feedback(recording_target)
-    if not all(
-        isinstance(ai_result.get(section), dict) and "score" in ai_result.get(section, {})
-        for section in ("clarity", "engagement", "persuasion")
-    ):
+    if recording_target.startswith("demo://"):
         ai_result = _build_demo_feedback_payload()
+    else:
+        ai_result = await generate_feedback(recording_target)
+        if not all(
+            isinstance(ai_result.get(section), dict) and "score" in ai_result.get(section, {})
+            for section in ("clarity", "engagement", "persuasion")
+        ):
+            ai_result = _build_demo_feedback_payload()
 
     if rehearsal and current_user:
         feedback = Feedback(
