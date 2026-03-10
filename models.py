@@ -99,7 +99,7 @@ class Script(Base):
     __tablename__ = f"{PREFIX}scripts"
     id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(PGUUID(as_uuid=True), ForeignKey(f"{PREFIX}users.id"), nullable=False)
-    rehearsal_id = Column(PGUUID(as_uuid=True), ForeignKey(f"{PREFIX}rehearsals.id"), nullable=False)
+    rehearsal_id = Column(PGUUID(as_uuid=True), ForeignKey(f"{PREFIX}rehearsals.id"), nullable=True)
     content = Column(JSON, nullable=False)  # generated script & key points
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

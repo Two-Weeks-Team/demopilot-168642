@@ -50,7 +50,7 @@ def _verify_token(token: str, db: Session) -> User:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
 
-async def get_current_user(token: str = Depends(auth_scheme), db: Session = Depends(get_db)) -> User:
+async def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(get_db)) -> User:
     return _verify_token(token, db)
 
 # ---------------------------------------------------------------------------
