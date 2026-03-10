@@ -24,7 +24,12 @@ elif _raw_url.startswith("postgres://"):
     _raw_url = _raw_url.replace("postgres://", "postgresql+psycopg://")
 
 # Add SSL mode for remote Postgres instances (non‑localhost & non‑sqlite)
-if not _raw_url.startswith("sqlite") and "localhost" not in _raw_url and "127.0.0.1" not in _raw_url:
+if (
+    not _raw_url.startswith("sqlite")
+    and "localhost" not in _raw_url
+    and "127.0.0.1" not in _raw_url
+    and "sslmode=" not in _raw_url.lower()
+):
     if "?" in _raw_url:
         _raw_url = f"{_raw_url}&sslmode=require"
     else:
